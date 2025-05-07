@@ -48,7 +48,7 @@ type FrameCursor struct {
 type Traces []Trace
 
 // CaptureTraces gets the current stack trace with some deep frames skipped
-func CaptureTraces(skip int) Traces {
+func CaptureTraces(skip int) (Traces, []uintptr) {
 	var buf [32]uintptr
 	// +2 means that we also skip `CaptureTraces` and `runtime.Callers` frames.
 	n := runtime.Callers(skip+2, buf[:])
@@ -58,7 +58,7 @@ func CaptureTraces(skip int) Traces {
 		Rest: frames,
 		N:    n,
 	}
-	return GetTracesFromCursor(cursor)
+	return GetTracesFromCursor(cursor), pcs
 }
 
 // GetTracesFromCursor gets the current stack trace from a given cursor
