@@ -205,13 +205,13 @@ func newTrace(err error) *TraceErr {
 	// newTrace does not call newTraceWithDepth so the depth value is consistent
 	// between both methods.
 	const depth = 2
-	traces := internal.CaptureTraces(depth)
-	return &TraceErr{Err: err, Traces: traces}
+	traces, pc := internal.CaptureTraces(depth)
+	return &TraceErr{Err: err, Traces: traces, pc: pc}
 }
 
 func newTraceWithDepth(err error, depth int) *TraceErr {
-	traces := internal.CaptureTraces(depth)
-	return &TraceErr{Err: err, Traces: traces}
+	traces, pc := internal.CaptureTraces(depth)
+	return &TraceErr{Err: err, Traces: traces, pc: pc}
 }
 
 type Traces = internal.Traces
@@ -229,6 +229,10 @@ func (e *TraceErr) MarshalJSON() ([]byte, error) {
 	return json.Marshal(err)
 }
 
+func (e *TraceErr) StackTrace() []uintptr {
+	return e.pc
+}
+
 // TraceErr contains error message and some additional
 // information about the error origin
 type TraceErr struct {
@@ -244,6 +248,8 @@ type TraceErr struct {
 	Messages []string `json:"messages,omitempty"`
 	// Fields is a list of key-value-pairs that can be wrapped with the error to give additional context
 	Fields map[string]interface{} `json:"fields,omitempty"`
+	// pc hold stack trace (for sentry)
+	pc []uintptr
 }
 
 // Fields maps arbitrary keys to values inside an error
